@@ -1,0 +1,8 @@
+{
+  "name": "bolt",
+  "version": "0.0.1",
+  "description": "Misfit Bolt javascript Interface",
+  "main": "index.js",
+  "author": "",
+  "license": "MIT"
+}
