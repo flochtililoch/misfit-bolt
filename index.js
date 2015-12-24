@@ -1,75 +1,123 @@
-'use strict'
+'use strict';
 
+var debug = require('debug')('bolt');
 var noble = require('noble');
-var events = require('events');
+var Peripheral = require('noble/lib/peripheral');
 
-function startScanning() {
-  noble.on('stateChange', function(state) {
-    if (state === 'poweredOn') {
-      noble.startScanning();
-    } else {
-      noble.stopScanning();
-    }
-  });
-}
-
-function pad(str) {
-  return String(`${str},,,,,,,,,,,,,,,,,`).substring(0, 18);
-}
+var advertisementName = 'MFBOLT';
 
 class Bolt {
-  constructor(peripheral, services, characteristics) {
+
+  constructor(peripheral) {
+    if (!(peripheral instanceof Peripheral)) {
+      throw new Error('Bolt : first argument should be instance of Peripheral');
+    }
     this.peripheral = peripheral;
-    this.services = services;
-    this.characteristics = characteristics;
   }
 
-  static discover(handler) {
-    if (typeof handler !== 'function') {
-      throw new Error('Bolt.discover : first argument should be a function');
+  connect(done) {
+    if (typeof done !== 'function') {
+      throw new Error('Bolt#connect : first argument should be a function');
     }
-    noble.on('discover', function(peripheral) {
-      if (peripheral.advertisement.localName == 'MFBOLT') {
-        peripheral.connect(function(error) {
-          peripheral.discoverAllServicesAndCharacteristics(function(error, services, characteristics) {
-            handler(new Bolt(peripheral, services, characteristics));
-          })
-        });
+    debug('connecting');
+    this.peripheral.connect(() => {
+      debug('connected');
+      this.peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
+        debug('got light');
+        this.light = characteristics[0];
+        done();
+      });
+    });
+    return this;
+  }
+
+  disconnect(done) {
+    debug('disconnecting');
+    this.peripheral.disconnect(() => {
+      debug('disconnected');
+      if (typeof done == 'function') {
+        done();
       }
     });
-    startScanning();
   }
 
   set(value) {
-    this.characteristics[0].write(new Buffer(pad(value)));
+    if (typeof value !== 'string' || value.length > 18) {
+      throw new Error('Bolt#set : first argument should be a string of 18 chars max');
+    }
+
+    var length = 18;
+    var padding = ','.repeat(length);
+    var string = `${value}${padding}`.substring(0, length);
+    var buffer = new Buffer(string);
+    this.light.write(buffer);
   }
 
-  off() {
+  setRGBA(red, gree, blue, alpha) {
+    this.set([red, gree, blue, alpha].join(','));
+  }
+
+  get(done) {
+    if (typeof done !== 'function') {
+      throw new Error('Bolt#get : first argument should be a function');
+    }
+    debug('reading');
+    this.light.read((error, buffer) => {
+      debug('read');
+      var string = buffer.toString();
+      done(string.replace(/,+$/, ''));
+    });
+  }
+
+  getRGBA(done) {
+    if (typeof done !== 'function') {
+      throw new Error('Bolt#getRGBA : first argument should be a function');
+    }
+    this.get((value) => {
+      var r, g, b, a;
+      var rgba = value.match(/(\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3})/).slice(1, 5);
+      try {
+        r = +rgba[0];
+        g = +rgba[1];
+        b = +rgba[2];
+        a = +rgba[3];
+      } catch (e) {
+        throw new Error('Bolt#getRGBA : cannot parse current value into RGBA');
+      }
+      done([r, g, b, a]);
+    });
+  }
+
+  off(done) {
     this.set("CLTMP 3200,0");
   }
 
-  on() {
+  on(done) {
     this.set("CLTMP 3200,1");
   }
 
-  pink() {
-    this.set("255,80,110,50");
-  }
+  static discover(done, uuid) {
+    if (typeof done !== 'function') {
+      throw new Error('Bolt.discover : first argument should be a function');
+    }
 
-  orange() {
-    this.set("255,100,0,40")
-  }
+    noble.on('discover', (peripheral) => {
+      if (peripheral.advertisement.localName == advertisementName) {
+        if (uuid !== undefined && peripheral.uuid != uuid) {
+          return;
+        }
+        done(new Bolt(peripheral));
+      }
+    });
 
-  silver() {
-    this.set("110,80,255,80")
+    noble.on('stateChange', (state) => {
+      if (state === 'poweredOn') {
+        noble.startScanning();
+      } else {
+        noble.stopScanning();
+      }
+    });
   }
-
-  magenta() {
-    this.set("255,0,255,80")
-  }
-
-  green() {
-    this.set("50,255,0,50")
-  }
-
 }
+
+module.exports = Bolt;
