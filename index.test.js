@@ -29,7 +29,7 @@ describe('Bolt', () => {
     });
 
     it('sets peripheral parameter as instance property', () => {
-      sinon.match(peripheral, bolt.peripheral);
+      chai.expect(peripheral).to.equal(bolt.peripheral);
     });
 
   });
@@ -47,7 +47,7 @@ describe('Bolt', () => {
     describe('with callback', () => {
 
       var connectSpy, discoverLightSpy,
-          characteristics = ['foo'];
+          characteristics = [{uuid: 'foo'},{uuid:'fff1'}];
 
       before((done) => {
         connectSpy = sinon.stub(peripheral, 'connect', (cb) => {
@@ -70,7 +70,7 @@ describe('Bolt', () => {
       });
 
       it('sets first characteristic as `light` instance property', () => {
-        sinon.match(bolt.light, characteristics[0]);
+        chai.expect(bolt.light).to.deep.equal(characteristics[1]);
       });
 
     });

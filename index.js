@@ -21,10 +21,20 @@ class Bolt {
     }
     debug('connecting');
     this.peripheral.connect(() => {
-      debug('connected');
+      debug(`connected: ${this.peripheral.uuid}`);
       this.peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
         debug('got light');
-        this.light = characteristics[0];
+        var characteristic;
+        for (var i = 0; i < characteristics.length; i ++) {
+          characteristic = characteristics[i];
+          if(characteristic.uuid == 'fff1') {
+            this.light = characteristic;
+          }
+        }
+        if (!characteristic) {
+          throw new Error('Bolt#connect : could not find light characteristic');
+        }
+
         done();
       });
     });
@@ -50,6 +60,7 @@ class Bolt {
     var padding = ','.repeat(length);
     var string = `${value}${padding}`.substring(0, length);
     var buffer = new Buffer(string);
+    debug(`set light: ${string}`)
     this.light.write(buffer);
   }
 
