@@ -9,13 +9,9 @@
     "light",
     "bulb"
   ],
-  "bin": {
-    "jshint": "./bin/jshint",
-    "mocha": "./bin/mocha"
-  },
   "scripts": {
-    "lint": "jshint *.js",
-    "test": "mocha ."
+    "lint": "./bin/jshint *.js",
+    "test": "./bin/mocha ."
   },
   "main": "index.js",
   "author": {
