@@ -30,7 +30,7 @@ bolt.connect(callback);
 
 ### Disconnect
 ```javascript
-bolt.connect([callback]);
+bolt.disconnect([callback]);
 ```
 
 ### On
