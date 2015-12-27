@@ -20,12 +20,17 @@ npm install misfit-bolt
 
 ### Discover
 ```javascript
-Bolt.discover(callback(bolt));
+Bolt.discover(callback(bolt), [uuid]);
 ```
 
 ### Connect
 ```javascript
 bolt.connect(callback);
+```
+
+### Disconnect
+```javascript
+bolt.connect([callback]);
 ```
 
 ### On

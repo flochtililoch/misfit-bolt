@@ -11,14 +11,15 @@
   ],
   "scripts": {
     "lint": "./bin/jshint *.js",
-    "test": "./bin/mocha ."
+    "test": "./bin/mocha .",
+    "patch-release": "npm version patch && npm publish && git push --follow-tags"
   },
   "main": "index.js",
   "author": {
     "name": "Florent Bonomo",
     "email": "flochtililoch@gmail.com"
   },
-  "license": "MIT",
+  "license": "ISC",
   "dependencies": {
     "debug": "^2.2.0",
     "noble": "^1.2.1"

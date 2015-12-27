@@ -99,11 +99,11 @@ class Bolt {
     });
   }
 
-  off(done) {
+  off() {
     this.set("CLTMP 3200,0");
   }
 
-  on(done) {
+  on() {
     this.set("CLTMP 3200,1");
   }
 
