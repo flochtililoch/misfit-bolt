@@ -49,6 +49,7 @@ class Bolt {
         done();
       }
     });
+    return this;
   }
 
   set(value) {
@@ -62,10 +63,12 @@ class Bolt {
     var buffer = new Buffer(string);
     debug(`set light: ${string}`)
     this.light.write(buffer);
+    return this;
   }
 
-  setRGBA(red, gree, blue, alpha) {
-    this.set([red, gree, blue, alpha].join(','));
+  setRGBA(rgba) {
+    // TODO: validate rgba values.
+    return this.set(rgba.join(','));
   }
 
   get(done) {
@@ -78,6 +81,7 @@ class Bolt {
       var string = buffer.toString();
       done(string.replace(/,+$/, ''));
     });
+    return this;
   }
 
   getRGBA(done) {
@@ -97,25 +101,30 @@ class Bolt {
       }
       done([r, g, b, a]);
     });
+    return this;
   }
 
   off() {
-    this.set("CLTMP 3200,0");
+    return this.set("CLTMP 3200,0");
   }
 
   on() {
-    this.set("CLTMP 3200,1");
+    return this.set("CLTMP 3200,1");
   }
 
-  static discover(done, uuid) {
+  static discover(done, uuids) {
     if (typeof done !== 'function') {
       throw new Error('Bolt.discover : first argument should be a function');
     }
 
     noble.on('discover', (peripheral) => {
       if (peripheral.advertisement.localName == advertisementName) {
-        if (uuid !== undefined && peripheral.uuid != uuid) {
-          return;
+        if (uuids !== undefined) {
+          if (!(uuids instanceof Array)) {
+            throw new Error('Bolt.discover : second optional argument should be an array');
+          } else if (uuids.indexOf(peripheral.uuid) == -1) {
+            return;
+          }
         }
         done(new Bolt(peripheral));
       }
