@@ -1,6 +1,6 @@
 {
   "name": "misfit-bolt",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Misfit Bolt Javascript Interface",
   "keywords": [
     "misfit",
@@ -10,12 +10,12 @@
     "bulb"
   ],
   "bugs": {
-    "url" : "https://github.com/flochtililoch/misfit-bolt/issues",
+    "url": "https://github.com/flochtililoch/misfit-bolt/issues",
     "email": "flochtililoch+npm-misfit-bolt@gmail.com"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/flochtililoch/misfit-bolt.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flochtililoch/misfit-bolt.git"
   },
   "scripts": {
     "lint": "./bin/jshint *.js",
