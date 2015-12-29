@@ -4,6 +4,13 @@ var noble = require('noble');
 var Peripheral = require('noble/lib/peripheral');
 
 var advertisementName = 'MFBOLT';
+var on = 'CLTMP 3200,100';
+var off = 'CLTMP 3200,0';
+
+function isOn(value) {
+  var str = ',100';
+  return value.substr(value.length - str.length, str.length) === str;
+}
 
 class Bolt {
 
@@ -120,8 +127,8 @@ class Bolt {
     debug('reading');
     this.getLight((error, light) => {
       light.read((error, buffer) => {
-        debug('read');
         var string = buffer.toString();
+        debug('read: ', string);
         done(error, string.replace(/,+$/, ''));
       });
     });
@@ -137,14 +144,17 @@ class Bolt {
     }
     this.get((error, value) => {
       var r, g, b, a;
-      var rgba = value.match(/(\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3})/).slice(1, 5);
       try {
+        var rgba = value.match(/(\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3})/).slice(1, 5);
         r = +rgba[0];
         g = +rgba[1];
         b = +rgba[2];
         a = +rgba[3];
       } catch (e) {
-        throw new Error('Bolt#getRGBA : cannot parse current value into RGBA');
+        r = 255;
+        g = 255;
+        b = 255;
+        a = isOn(value) ? 100 : 0;
       }
       done(error, [r, g, b, a]);
     });
@@ -159,17 +169,16 @@ class Bolt {
       throw new Error('Bolt#getState : bulb is not connected.');
     }
     this.get((error, value) => {
-      var off = ',0';
-      done(error, value.substr(value.length - off.length, off.length) === off);
+      done(error, isOn(value));
     });
   }
 
   off(done) {
-    return this.set("CLTMP 3200,0", done);
+    return this.set(off, done);
   }
 
   on(done) {
-    return this.set("CLTMP 3200,100", done);
+    return this.set(on, done);
   }
 
   static discover(done, uuids) {
