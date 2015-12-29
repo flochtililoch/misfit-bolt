@@ -1,9 +1,7 @@
 'use strict';
-
-var debug = require('debug')('bolt');
+var debug = require('debug')(require('./package').name);
 var noble = require('noble');
 var Peripheral = require('noble/lib/peripheral');
-var Color = require('color');
 
 var advertisementName = 'MFBOLT';
 
@@ -110,12 +108,6 @@ class Bolt {
     if (rgba[2] < 0 || rgba[2] > 255) { error('blue'); }
     if (rgba[3] < 0 || rgba[3] > 100) { error('alpha', 100); }
     return this.set(rgba.join(','), done);
-  }
-
-  setHSL(hsl, brightness, done) {
-    var color = new Color(`hsl(${hsl.join(', ')})`);
-    var rgba = color.rgbArray().concat(brightness);
-    return this.setRGBA(rgba, done);
   }
 
   get(done) {

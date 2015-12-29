@@ -31,7 +31,6 @@
   },
   "license": "ISC",
   "dependencies": {
-    "color": "^0.10.1",
     "debug": "^2.2.0",
     "noble": "^1.2.1"
   },

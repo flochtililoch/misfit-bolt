@@ -1,6 +1,7 @@
 # Misfit Bolt Javascript Interface
 
-Thin wrapper around [sandeepmistry/noble](https://github.com/sandeepmistry/noble), that helps Misfit Bolt bulbs discovery, and allows turning them on/off and changing their color and brightness, as well as reading their currently set values.
+Thin wrapper around [sandeepmistry/noble](https://github.com/sandeepmistry/noble), that helps [Misfit Bolt](https://misfit.com/products/bolt) bulbs discovery, and allows turning them on/off and changing their color and brightness, as well as reading their currently set values.
+Currently support setting color and brightness via [RGBA](https://en.wikipedia.org/wiki/RGBA_color_space).
 
 
 ## Prerequisites
@@ -129,7 +130,7 @@ bolt.off(function(){
 
 **Arguments**
 
-1. value (*String*): value to set on bulb. Mostly in the form or RGBA. Accepts "CLTMP 3200,0" or "CLTMP 3200,1" (used for toggle on / off). Other undocumented formats might exist.
+1. value (*String*): value to set on bulb. Mostly in the form or RGBA. Also accepts `CLTMP 3200,0` or `CLTMP 3200,1` (used to toggle on / off). Other undocumented formats might exist.
 2. callback (*function*)
 
 **Returns**
@@ -151,7 +152,7 @@ bolt.set("228,41,15,10", function(){
 
 **Arguments**
 
-1. value (*Array*): value to set on bulb. Although not enforced yet, should be in the form of `[red, gree, blue, alpha]`.
+1. value (*Array*): value to set on bulb. Should be in the form of `[red, green, blue, alpha]`.
 2. callback (*function*)
 
 **Returns**
@@ -212,7 +213,7 @@ bolt.get(function(rgbaValue) {
 ## Example
 
 ```javascript
-Bolt = require('.');
+Bolt = require('misfit-bolt');
 
 // Discover every nearby Bolt
 Bolt.discover(function(bolt) {
@@ -220,17 +221,19 @@ Bolt.discover(function(bolt) {
   // Each time a bolt is discovered, connect to it
   bolt.connect(function() {
     var i = 0,
-        colors = [['253','100%','49%'],
-                  ['117','100%','49%'],
-                  ['0','100%','49%'],
-                  ['62','100%','49%'],
-                  ['304','100%','49%']];
+        colors = [[228,41,15,10],
+                  [216,62,36,10],
+                  [205,55,56,10],
+                  [211,27,76,10],
+                  [166,18,97,10]];
 
-    // Change color every 2000 ms
+    // Change color every 500 ms
     setInterval(function(){
       var color = colors[i++ % colors.length];
-      bolt.setHSL(color, 10, function() {});
-    }, 2000);
+      bolt.setRGBA(color, function(){
+        // set complete
+      });
+    }, 500);
   });
 });
 
