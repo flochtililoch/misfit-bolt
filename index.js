@@ -3,6 +3,7 @@
 var debug = require('debug')('bolt');
 var noble = require('noble');
 var Peripheral = require('noble/lib/peripheral');
+var Color = require('color');
 
 var advertisementName = 'MFBOLT';
 
@@ -12,7 +13,31 @@ class Bolt {
     if (!(peripheral instanceof Peripheral)) {
       throw new Error('Bolt : first argument should be instance of Peripheral');
     }
+    this.id = peripheral.uuid;
     this.peripheral = peripheral;
+    this._connected = false;
+  }
+
+  getLight(done) {
+    debug('getting light');
+    if (this._light) {
+      debug('got cached light');
+      return done(undefined, this._light);
+    }
+    this.peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
+      debug('got light');
+      var characteristic;
+      for (var i = 0; i < characteristics.length; i ++) {
+        characteristic = characteristics[i];
+        if(characteristic.uuid == 'fff1') {
+          this._light = characteristic;
+        }
+      }
+      if (!characteristic) {
+        throw new Error('Bolt#connect : could not find light characteristic');
+      }
+      done(error, this._light);
+    });
   }
 
   connect(done) {
@@ -20,66 +45,93 @@ class Bolt {
       throw new Error('Bolt#connect : first argument should be a function');
     }
     debug('connecting');
-    this.peripheral.connect(() => {
+    if (this._connected) {
+      return done();
+    }
+    this.peripheral.connect((error) => {
+      this._connected = true;
       debug(`connected: ${this.peripheral.uuid}`);
-      this.peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
-        debug('got light');
-        var characteristic;
-        for (var i = 0; i < characteristics.length; i ++) {
-          characteristic = characteristics[i];
-          if(characteristic.uuid == 'fff1') {
-            this.light = characteristic;
-          }
-        }
-        if (!characteristic) {
-          throw new Error('Bolt#connect : could not find light characteristic');
-        }
-
-        done();
-      });
+      this.getLight(done);
     });
     return this;
   }
 
   disconnect(done) {
+    if (typeof done !== 'function') {
+      throw new Error('Bolt#disconnect : first argument should be a function');
+    }
     debug('disconnecting');
-    this.peripheral.disconnect(() => {
+    if (!this._connected) {
+      return done();
+    }
+    this.peripheral.disconnect((error) => {
+      this._connected = false;
+      this._light = undefined;
       debug('disconnected');
-      if (typeof done == 'function') {
-        done();
-      }
+      done(error);
     });
     return this;
   }
 
-  set(value) {
+  set(value, done) {
     if (typeof value !== 'string' || value.length > 18) {
       throw new Error('Bolt#set : first argument should be a string of 18 chars max');
+    }
+    if (typeof done !== 'function') {
+      throw new Error('Bolt#set : second argument should be a function');
+    }
+    if (!this._connected) {
+      throw new Error('Bolt#set : bulb is not connected.');
     }
 
     var length = 18;
     var padding = ','.repeat(length);
     var string = `${value}${padding}`.substring(0, length);
     var buffer = new Buffer(string);
-    debug(`set light: ${string}`)
-    this.light.write(buffer);
+    this.getLight((error, light) => {
+      debug(`set light: ${light} with value: ${string}`);
+      light.write(buffer, undefined, done);
+    });
     return this;
   }
 
-  setRGBA(rgba) {
-    // TODO: validate rgba values.
-    return this.set(rgba.join(','));
+  setRGBA(rgba, done) {
+    if (!this._connected) {
+      throw new Error('Bolt#setRGBA : bulb is not connected.');
+    }
+    function error(property, max) {
+      if (!max) {
+        max = 255;
+      }
+      throw new Error(`Bolt#setRGBA : ${property} should be an integer between 0 and ${max}`);
+    }
+    if (rgba[0] < 0 || rgba[0] > 255) { error('red'); }
+    if (rgba[1] < 0 || rgba[1] > 255) { error('green'); }
+    if (rgba[2] < 0 || rgba[2] > 255) { error('blue'); }
+    if (rgba[3] < 0 || rgba[3] > 100) { error('alpha', 100); }
+    return this.set(rgba.join(','), done);
+  }
+
+  setHSL(hsl, brightness, done) {
+    var color = new Color(`hsl(${hsl.join(', ')})`);
+    var rgba = color.rgbArray().concat(brightness);
+    return this.setRGBA(rgba, done);
   }
 
   get(done) {
     if (typeof done !== 'function') {
       throw new Error('Bolt#get : first argument should be a function');
     }
+    if (!this._connected) {
+      throw new Error('Bolt#get : bulb is not connected.');
+    }
     debug('reading');
-    this.light.read((error, buffer) => {
-      debug('read');
-      var string = buffer.toString();
-      done(string.replace(/,+$/, ''));
+    this.getLight((error, light) => {
+      light.read((error, buffer) => {
+        debug('read');
+        var string = buffer.toString();
+        done(error, string.replace(/,+$/, ''));
+      });
     });
     return this;
   }
@@ -88,7 +140,10 @@ class Bolt {
     if (typeof done !== 'function') {
       throw new Error('Bolt#getRGBA : first argument should be a function');
     }
-    this.get((value) => {
+    if (!this._connected) {
+      throw new Error('Bolt#getRGBA : bulb is not connected.');
+    }
+    this.get((error, value) => {
       var r, g, b, a;
       var rgba = value.match(/(\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3})/).slice(1, 5);
       try {
@@ -99,17 +154,30 @@ class Bolt {
       } catch (e) {
         throw new Error('Bolt#getRGBA : cannot parse current value into RGBA');
       }
-      done([r, g, b, a]);
+      done(error, [r, g, b, a]);
     });
     return this;
   }
 
-  off() {
-    return this.set("CLTMP 3200,0");
+  getState(done) {
+    if (typeof done !== 'function') {
+      throw new Error('Bolt#getState : first argument should be a function');
+    }
+    if (!this._connected) {
+      throw new Error('Bolt#getState : bulb is not connected.');
+    }
+    this.get((error, value) => {
+      var off = ',0';
+      done(error, value.substr(value.length - off.length, off.length) === off);
+    });
   }
 
-  on() {
-    return this.set("CLTMP 3200,1");
+  off(done) {
+    return this.set("CLTMP 3200,0", done);
+  }
+
+  on(done) {
+    return this.set("CLTMP 3200,100", done);
   }
 
   static discover(done, uuids) {

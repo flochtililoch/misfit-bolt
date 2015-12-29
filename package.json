@@ -18,8 +18,8 @@
     "url": "https://github.com/flochtililoch/misfit-bolt.git"
   },
   "scripts": {
-    "lint": "./bin/jshint *.js",
-    "test": "./bin/mocha .",
+    "lint": "./node_modules/.bin/jshint *.js",
+    "test": "./node_modules/.bin/mocha .",
     "patch-release": "npm version patch && npm publish && git push --follow-tags",
     "minor-release": "npm version minor && npm publish && git push --follow-tags",
     "major-release": "npm version major && npm publish && git push --follow-tags"
@@ -31,6 +31,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "color": "^0.10.1",
     "debug": "^2.2.0",
     "noble": "^1.2.1"
   },

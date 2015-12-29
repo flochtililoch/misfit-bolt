@@ -34,7 +34,7 @@ npm install misfit-bolt
 **Example**
 ```javascript
 Bolt.discover(function(bolt) {
-  // do something with bolt instance
+  // do something
 }, ['29852E52-67A0-490A-BC55-7FAB809AD0C0']);
 ```
 
@@ -45,7 +45,7 @@ Bolt.discover(function(bolt) {
 
 **Arguments**
 
-1. callback (*function*): gets called when connection is complete.
+1. callback (*function*)
 
 **Returns**
 
@@ -55,7 +55,7 @@ instance
 
 ```javascript
 bolt.connect(function() {
-  // do something with bolt instance
+  // do something
 });
 ```
 
@@ -66,7 +66,7 @@ bolt.connect(function() {
 
 **Arguments**
 
-1. callback (*function*, optional): gets called when disconnection is complete.
+1. callback (*function*)
 
 **Returns**
 
@@ -75,7 +75,9 @@ instance
 **Example**
 
 ```javascript
-bolt.disconnect();
+bolt.disconnect(function(){
+  // do something
+});
 ```
 
 
@@ -85,7 +87,7 @@ bolt.disconnect();
 
 **Arguments**
 
-none
+1. callback (*function*)
 
 **Returns**
 
@@ -94,7 +96,9 @@ instance
 **Example**
 
 ```javascript
-bolt.on();
+bolt.on(function(){
+  // do something
+});
 ```
 
 
@@ -104,7 +108,7 @@ bolt.on();
 
 **Arguments**
 
-none
+1. callback (*function*)
 
 **Returns**
 
@@ -113,7 +117,9 @@ instance
 **Example**
 
 ```javascript
-bolt.off();
+bolt.off(function(){
+  // do something
+});
 ```
 
 
@@ -124,6 +130,7 @@ bolt.off();
 **Arguments**
 
 1. value (*String*): value to set on bulb. Mostly in the form or RGBA. Accepts "CLTMP 3200,0" or "CLTMP 3200,1" (used for toggle on / off). Other undocumented formats might exist.
+2. callback (*function*)
 
 **Returns**
 
@@ -132,7 +139,9 @@ instance
 **Example**
 
 ```javascript
-bolt.set("228,41,15,10");
+bolt.set("228,41,15,10", function(){
+  // do something
+});
 ```
 
 
@@ -143,6 +152,7 @@ bolt.set("228,41,15,10");
 **Arguments**
 
 1. value (*Array*): value to set on bulb. Although not enforced yet, should be in the form of `[red, gree, blue, alpha]`.
+2. callback (*function*)
 
 **Returns**
 
@@ -151,7 +161,9 @@ instance
 **Example**
 
 ```javascript
-bolt.setRGBA([228,41,15,10]);
+bolt.setRGBA([228,41,15,10], function(){
+  // do something
+});
 ```
 
 
@@ -197,9 +209,10 @@ bolt.get(function(rgbaValue) {
 ```
 
 
-## Usage
+## Example
 
 ```javascript
+Bolt = require('.');
 
 // Discover every nearby Bolt
 Bolt.discover(function(bolt) {
@@ -207,19 +220,20 @@ Bolt.discover(function(bolt) {
   // Each time a bolt is discovered, connect to it
   bolt.connect(function() {
     var i = 0,
-        colors = [[228,41,15,10],
-                  [216,62,36,10],
-                  [205,55,56,10],
-                  [211,27,76,10],
-                  [166,18,97,10]];
+        colors = [['253','100%','49%'],
+                  ['117','100%','49%'],
+                  ['0','100%','49%'],
+                  ['62','100%','49%'],
+                  ['304','100%','49%']];
 
-    // Change color every 500 ms
+    // Change color every 2000 ms
     setInterval(function(){
       var color = colors[i++ % colors.length];
-      bolt.setRGBA.apply(bolt, color);
-    }, 500);
+      bolt.setHSL(color, 10, function() {});
+    }, 2000);
   });
 });
+
 ```
 
 
