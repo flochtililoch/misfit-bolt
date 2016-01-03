@@ -51,13 +51,14 @@ class Bolt {
     }
     debug('connecting');
     if (this._connected) {
-      return done();
-    }
-    this.peripheral.connect((error) => {
-      this._connected = true;
-      debug(`connected: ${this.peripheral.uuid}`);
       this.getLight(done);
-    });
+    } else {
+      this.peripheral.connect((error) => {
+        this._connected = true;
+        debug(`connected: ${this.peripheral.uuid}`);
+        this.getLight(done);
+      });
+    }
     return this;
   }
 
@@ -100,23 +101,6 @@ class Bolt {
     return this;
   }
 
-  setRGBA(rgba, done) {
-    if (!this._connected) {
-      throw new Error('Bolt#setRGBA : bulb is not connected.');
-    }
-    function error(property, max) {
-      if (!max) {
-        max = 255;
-      }
-      throw new Error(`Bolt#setRGBA : ${property} should be an integer between 0 and ${max}`);
-    }
-    if (rgba[0] < 0 || rgba[0] > 255) { error('red'); }
-    if (rgba[1] < 0 || rgba[1] > 255) { error('green'); }
-    if (rgba[2] < 0 || rgba[2] > 255) { error('blue'); }
-    if (rgba[3] < 0 || rgba[3] > 100) { error('alpha', 100); }
-    return this.set(rgba.join(','), done);
-  }
-
   get(done) {
     if (typeof done !== 'function') {
       throw new Error('Bolt#get : first argument should be a function');
@@ -133,6 +117,23 @@ class Bolt {
       });
     });
     return this;
+  }
+
+  setRGBA(rgba, done) {
+    if (!this._connected) {
+      throw new Error('Bolt#setRGBA : bulb is not connected.');
+    }
+    function error(property, max) {
+      if (!max) {
+        max = 255;
+      }
+      throw new Error(`Bolt#setRGBA : ${property} should be an integer between 0 and ${max}`);
+    }
+    if (rgba[0] < 0 || rgba[0] > 255) { error('red'); }
+    if (rgba[1] < 0 || rgba[1] > 255) { error('green'); }
+    if (rgba[2] < 0 || rgba[2] > 255) { error('blue'); }
+    if (rgba[3] < 0 || rgba[3] > 100) { error('alpha', 100); }
+    return this.set(rgba.join(','), done);
   }
 
   getRGBA(done) {
@@ -159,6 +160,10 @@ class Bolt {
       done(error, [r, g, b, a]);
     });
     return this;
+  }
+
+  setState(state, done) {
+    return this.set(state ? on : off, done);
   }
 
   getState(done) {

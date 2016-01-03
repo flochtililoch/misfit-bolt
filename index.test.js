@@ -51,26 +51,58 @@ describe('Bolt', () => {
 
     describe('with callback', () => {
 
-      var connectSpy, getLightSpy;
+      describe('when not already connected', () => {
 
-      before((done) => {
-        connectSpy = sinon.sandbox.stub(peripheral, 'connect', (cb) => {
-          cb();
+        var connectSpy, getLightSpy;
+
+        before((done) => {
+          bolt.connected = false;
+          connectSpy = sinon.sandbox.stub(peripheral, 'connect', (cb) => {
+            cb();
+          });
+          getLightSpy = sinon.sandbox.stub(bolt, 'getLight', (cb) => {
+            cb();
+          });
+          bolt.connect(() => {
+            done();
+          });
         });
-        getLightSpy = sinon.sandbox.stub(bolt, 'getLight', (cb) => {
-          cb();
+
+        it('first calls `connect` on the peripheral object', () => {
+          chai.expect(connectSpy.calledBefore(getLightSpy)).to.be.true;
         });
-        bolt.connect(() => {
-          done();
+
+        it('then calls `getLight` on the instance object', () => {
+          chai.expect(getLightSpy.calledAfter(connectSpy)).to.be.true;
         });
+
       });
 
-      it('first calls `connect` on the peripheral object', () => {
-        chai.expect(connectSpy.calledBefore(getLightSpy));
-      });
+      describe('when already connected', () => {
 
-      it('then calls `getLight` on the instance object', () => {
-        chai.expect(getLightSpy.calledAfter(connectSpy));
+        var connectSpy, getLightSpy;
+
+        before((done) => {
+          bolt._connected = true;
+          connectSpy = sinon.sandbox.stub(peripheral, 'connect', (cb) => {
+            cb();
+          });
+          getLightSpy = sinon.sandbox.stub(bolt, 'getLight', (cb) => {
+            cb();
+          });
+          bolt.connect(() => {
+            done();
+          });
+        });
+
+        it('does not call `connect` on the peripheral object', () => {
+          chai.expect(connectSpy.called).to.be.false;
+        });
+
+        it('then calls `getLight` on the instance object', () => {
+          chai.expect(getLightSpy.called).to.be.true;
+        });
+
       });
 
     });
@@ -110,19 +142,16 @@ describe('Bolt', () => {
 
   describe('#getLight', () => {
 
-    var discoverLightSpy,
-        characteristics = [{uuid: 'foo'}, {uuid:'fff1'}];
-
-    before(() => {
-      discoverLightSpy = sinon.sandbox.stub(peripheral, 'discoverAllServicesAndCharacteristics', (cb) => {
-        cb(undefined, undefined, characteristics);
-      });
-    });
-
     describe('with `_light` not defined', () => {
-      var returnedLight;
+
+      var discoverLightSpy, returnedLight,
+          characteristics = [{uuid: 'foo'}, {uuid:'fff1'}];
+
       before((done) => {
         bolt._light = undefined;
+        discoverLightSpy = sinon.sandbox.stub(peripheral, 'discoverAllServicesAndCharacteristics', (cb) => {
+          cb(undefined, undefined, characteristics);
+        });
         bolt.getLight((error, light) => {
           returnedLight = light;
           done();
@@ -130,7 +159,7 @@ describe('Bolt', () => {
       });
 
       it('calls `discoverAllServicesAndCharacteristics` on the peripheral object', () => {
-        chai.expect(discoverLightSpy.called);
+        chai.expect(discoverLightSpy.called).to.be.true;
       });
 
       it('sets first characteristic as `_light` instance property', () => {
@@ -143,9 +172,12 @@ describe('Bolt', () => {
     });
 
     describe('with `_light` defined', () => {
-      var returnedLight;
+
+      var discoverLightSpy, returnedLight;
+
       before((done) => {
         bolt._light = 'foo';
+        discoverLightSpy = sinon.sandbox.spy(peripheral, 'discoverAllServicesAndCharacteristics');
         bolt.getLight((error, light) => {
           returnedLight = light;
           done();
@@ -153,7 +185,7 @@ describe('Bolt', () => {
       });
 
       it('does not call `discoverAllServicesAndCharacteristics` on the peripheral object', () => {
-        chai.expect(!discoverLightSpy.called);
+        chai.expect(discoverLightSpy.called).to.be.false;
       });
 
       it('passes back the cached `_light` property', () => {
@@ -245,7 +277,7 @@ describe('Bolt', () => {
           });
 
           it('calls the `write` method on the light property with the correct buffer', () => {
-            chai.expect(spy.called);
+            chai.expect(spy.called).to.be.true;
             chai.expect(spy.args[0][0].toString()).to.equal(expectedBuffer.toString());
           });
 
@@ -305,7 +337,7 @@ describe('Bolt', () => {
       });
 
       it('calls #set method with the right value', () => {
-        chai.expect(spy.called);
+        chai.expect(spy.called).to.be.true;
         chai.expect(spy.args[0][0]).to.equal(rgba.join(','));
       });
 
@@ -344,7 +376,7 @@ describe('Bolt', () => {
       });
 
       it('calls the `read` method on the light property', () => {
-        chai.expect(spy.called);
+        chai.expect(spy.called).to.be.true;
         chai.expect(returnedValue).to.equal(expectedValue);
       });
 
@@ -379,7 +411,7 @@ describe('Bolt', () => {
       });
 
       it('calls #get method then parses the returned value', () => {
-        chai.expect(spy.called);
+        chai.expect(spy.called).to.be.true;
         chai.expect(returnedValue).to.deep.equal([123,234,345,0]);
       });
 
@@ -435,11 +467,11 @@ describe('Bolt', () => {
           });
 
           it('calls #get method', () => {
-            chai.expect(spy.called);
+            chai.expect(spy.called).to.be.true;
           });
 
           it('return `false`', () => {
-            chai.expect(!returnedValue);
+            chai.expect(returnedValue).to.be.false;
           });
 
         });
@@ -457,11 +489,11 @@ describe('Bolt', () => {
           });
 
           it('calls #get method', () => {
-            chai.expect(spy.called);
+            chai.expect(spy.called).to.be.true;
           });
 
           it('return `true`', () => {
-            chai.expect(returnedValue);
+            chai.expect(returnedValue).to.be.true;
           });
 
         });
@@ -483,7 +515,7 @@ describe('Bolt', () => {
     });
 
     it('calls #set method with the right value', () => {
-      chai.expect(spy.called);
+      chai.expect(spy.called).to.be.true;
       chai.expect(spy.args[0][0]).to.equal(expectedSetValue);
     });
 
@@ -500,9 +532,47 @@ describe('Bolt', () => {
     });
 
     it('calls #set method with the right value', () => {
-      chai.expect(spy.called);
+      chai.expect(spy.called).to.be.true;
       chai.expect(spy.args[0][0]).to.equal(expectedSetValue);
     });
+  });
+
+  describe('#setState', () => {
+
+    describe('with state = `true`', () => {
+
+      var expectedSetValue, spy;
+
+      before(() => {
+        expectedSetValue = 'CLTMP 3200,0';
+        spy = sinon.sandbox.stub(bolt, 'set');
+        bolt.off();
+      });
+
+      it('calls #set method with the right value', () => {
+        chai.expect(spy.called).to.be.true;
+        chai.expect(spy.args[0][0]).to.equal(expectedSetValue);
+      });
+
+    });
+
+    describe('with state = `false`', () => {
+
+      var expectedSetValue, spy;
+
+      before(() => {
+        expectedSetValue = 'CLTMP 3200,0';
+        spy = sinon.sandbox.stub(bolt, 'set');
+        bolt.off();
+      });
+
+      it('calls #set method with the right value', () => {
+        chai.expect(spy.called).to.be.true;
+        chai.expect(spy.args[0][0]).to.equal(expectedSetValue);
+      });
+
+    });
+
   });
 
 });

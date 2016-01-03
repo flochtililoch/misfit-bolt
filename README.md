@@ -183,7 +183,7 @@ instance
 **Example**
 
 ```javascript
-bolt.get(function(value) {
+bolt.get(function(error, value) {
   // do something with value
 });
 
@@ -204,11 +204,50 @@ instance
 **Example**
 
 ```javascript
-bolt.get(function(rgbaValue) {
+bolt.get(function(error, rgbaValue) {
   // do something with rgbaValue
 });
 ```
 
+### getState
+
+**Type** instance
+
+**Arguments**
+
+1. callback (*function*): function invoked when state is available. Return value of `Bool` type.
+
+**Returns**
+
+instance
+
+**Example**
+
+```javascript
+bolt.getState(function(error, state) {
+  // do something with state
+});
+```
+
+### setState
+
+**Type** instance
+
+**Arguments**
+
+1. callback (*function*): function invoked when state is set.
+
+**Returns**
+
+instance
+
+**Example**
+
+```javascript
+bolt.setState(true, function(error, state) {
+  // do something with state
+});
+```
 
 ## Example
 
