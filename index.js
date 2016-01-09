@@ -3,9 +3,10 @@ var debug = require('debug')(require('./package').name);
 var noble = require('noble');
 var Peripheral = require('noble/lib/peripheral');
 
-var advertisementName = 'MFBOLT';
-var on = 'CLTMP 3200,100';
-var off = 'CLTMP 3200,0';
+var advertisementName = 'MFBOLT',
+    lightCharacteristicUUID = 'fff1',
+    on = 'CLTMP 3200,100',
+    off = 'CLTMP 3200,0';
 
 function isOn(value) {
   var str = ',100';
@@ -34,7 +35,7 @@ class Bolt {
       var characteristic;
       for (var i = 0; i < characteristics.length; i ++) {
         characteristic = characteristics[i];
-        if(characteristic.uuid == 'fff1') {
+        if(characteristic.uuid == lightCharacteristicUUID) {
           this._light = characteristic;
         }
       }
