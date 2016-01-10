@@ -1,6 +1,6 @@
 'use strict';
 var debug = require('debug')(require('./package').name);
-var noble = require('noble');
+var noble = require('./noble');
 var Peripheral = require('noble/lib/peripheral');
 
 var advertisementName = 'MFBOLT',
@@ -9,8 +9,8 @@ var advertisementName = 'MFBOLT',
     off = 'CLTMP 3200,0';
 
 function isOn(value) {
-  var str = ',100';
-  return value.substr(value.length - str.length, str.length) === str;
+  var str = ',0';
+  return value.substr(value.length - str.length, str.length) !== str;
 }
 
 class Bolt {
@@ -52,6 +52,7 @@ class Bolt {
     }
     debug('connecting');
     if (this._connected) {
+      debug('already connected');
       this.getLight(done);
     } else {
       this.peripheral.connect((error) => {
@@ -69,6 +70,7 @@ class Bolt {
     }
     debug('disconnecting');
     if (!this._connected) {
+      debug('already disconnected');
       return done();
     }
     this.peripheral.disconnect((error) => {
