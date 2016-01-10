@@ -498,6 +498,28 @@ describe('Bolt', () => {
 
         });
 
+        describe('when light brightness is set', () => {
+
+          before((done) => {
+            spy = sinon.sandbox.stub(bolt, 'get', (cb) => {
+              cb(undefined, '255,255,255,1');
+            });
+            bolt.getState((error, value) => {
+              returnedValue = value;
+              done();
+            });
+          });
+
+          it('calls #get method', () => {
+            chai.expect(spy.called).to.be.true;
+          });
+
+          it('return `true`', () => {
+            chai.expect(returnedValue).to.be.true;
+          });
+
+        });
+
       });
 
     });

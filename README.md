@@ -1,4 +1,5 @@
-# Misfit Bolt Javascript Interface
+# Misfit Bolt Javascript Interface ![Build status](https://travis-ci.org/flochtililoch/misfit-bolt.svg)
+
 
 Thin wrapper around [sandeepmistry/noble](https://github.com/sandeepmistry/noble), that helps [Misfit Bolt](https://misfit.com/products/bolt) bulbs discovery, and allows turning them on/off and changing their color and brightness, as well as reading their currently set values.
 Currently support setting color and brightness via [RGBA](https://en.wikipedia.org/wiki/RGBA_color_space).
@@ -252,7 +253,7 @@ bolt.setState(true, function(error, state) {
 ## Example
 
 ```javascript
-Bolt = require('misfit-bolt');
+Bolt = require('.');
 
 // Discover every nearby Bolt
 Bolt.discover(function(bolt) {
