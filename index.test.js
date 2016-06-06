@@ -83,7 +83,7 @@ describe('Bolt', () => {
         var connectSpy, getLightSpy;
 
         before((done) => {
-          bolt._connected = true;
+          bolt.connected = true;
           connectSpy = sinon.sandbox.stub(peripheral, 'connect', (cb) => {
             cb();
           });
@@ -142,13 +142,13 @@ describe('Bolt', () => {
 
   describe('#getLight', () => {
 
-    describe('with `_light` not defined', () => {
+    describe('with `light` not defined', () => {
 
       var discoverLightSpy, returnedLight,
           characteristics = [{uuid: 'foo'}, {uuid:'fff1'}];
 
       before((done) => {
-        bolt._light = undefined;
+        bolt.light = undefined;
         discoverLightSpy = sinon.sandbox.stub(peripheral, 'discoverAllServicesAndCharacteristics', (cb) => {
           cb(undefined, undefined, characteristics);
         });
@@ -162,21 +162,21 @@ describe('Bolt', () => {
         chai.expect(discoverLightSpy.called).to.be.true;
       });
 
-      it('sets first characteristic as `_light` instance property', () => {
-        chai.expect(bolt._light).to.deep.equal(characteristics[1]);
+      it('sets first characteristic as `light` instance property', () => {
+        chai.expect(bolt.light).to.deep.equal(characteristics[1]);
       });
 
-      it('passes back the cached `_light` property', () => {
-        chai.expect(returnedLight).to.equal(bolt._light);
+      it('passes back the cached `light` property', () => {
+        chai.expect(returnedLight).to.equal(bolt.light);
       });
     });
 
-    describe('with `_light` defined', () => {
+    describe('with `light` defined', () => {
 
       var discoverLightSpy, returnedLight;
 
       before((done) => {
-        bolt._light = 'foo';
+        bolt.light = 'foo';
         discoverLightSpy = sinon.sandbox.spy(peripheral, 'discoverAllServicesAndCharacteristics');
         bolt.getLight((error, light) => {
           returnedLight = light;
@@ -188,8 +188,8 @@ describe('Bolt', () => {
         chai.expect(discoverLightSpy.called).to.be.false;
       });
 
-      it('passes back the cached `_light` property', () => {
-        chai.expect(returnedLight).to.equal(bolt._light);
+      it('passes back the cached `light` property', () => {
+        chai.expect(returnedLight).to.equal(bolt.light);
       });
 
     });
@@ -244,10 +244,10 @@ describe('Bolt', () => {
 
       describe('with callback', () => {
 
-        describe('when `_connected` is false', () => {
+        describe('when `connected` is false', () => {
 
           before(() => {
-            bolt._connected = false;
+            bolt.connected = false;
           });
 
           it('throws an error', () => {
@@ -258,18 +258,18 @@ describe('Bolt', () => {
 
         });
 
-        describe('when `_connected` is true', () => {
+        describe('when `connected` is true', () => {
 
           var spy, expectedBuffer;
 
           before((done) => {
-            bolt._connected = true;
+            bolt.connected = true;
 
             expectedBuffer = new Buffer(`${value},,,,,,,,,,,,,,,`);
 
             // stub light property, and create spy on write method
-            bolt._light = {write: () => {}};
-            spy = sinon.sandbox.stub(bolt._light, 'write', (buffer, withoutResponse, callback) => {
+            bolt.light = {write: () => {}};
+            spy = sinon.sandbox.stub(bolt.light, 'write', (buffer, withoutResponse, callback) => {
               callback();
             });
 
@@ -363,9 +363,9 @@ describe('Bolt', () => {
 
       before((done) => {
         // stub light property, and create spy on read method
-        bolt._light = {read: () => {}};
+        bolt.light = {read: () => {}};
         expectedValue = 'foo';
-        spy = sinon.sandbox.stub(bolt._light, 'read', (cb) => {
+        spy = sinon.sandbox.stub(bolt.light, 'read', (cb) => {
           cb(undefined, new Buffer(`${expectedValue},,,,,,,,,,,,,,,`));
         });
 
@@ -401,8 +401,9 @@ describe('Bolt', () => {
       var spy, returnedValue;
 
       before((done) => {
+        bolt.state.value = "123,234,345,0";
         spy = sinon.sandbox.stub(bolt, 'get', (cb) => {
-          cb(undefined, "123,234,345,0");
+          cb();
         });
         bolt.getRGBA((error, value) => {
           returnedValue = value;
@@ -433,10 +434,10 @@ describe('Bolt', () => {
 
     describe('with callback', () => {
 
-      describe('when `_connected` is false', () => {
+      describe('when `connected` is false', () => {
 
         before(() => {
-          bolt._connected = false;
+          bolt.connected = false;
         });
 
         it('throws an error', () => {
@@ -447,11 +448,11 @@ describe('Bolt', () => {
 
       });
 
-      describe('when `_connected` is true', () => {
+      describe('when `connected` is true', () => {
         var spy, getValue, returnedValue;
 
         before(() => {
-          bolt._connected = true;
+          bolt.connected = true;
         });
 
         describe('when get returns `CLTMP 3200,0`', () => {
