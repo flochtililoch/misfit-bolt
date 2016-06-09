@@ -125,6 +125,28 @@ bolt.off(function(){
 ```
 
 
+### get
+
+**Type** instance
+
+**Arguments**
+
+1. callback (*function*): function invoked when value is available. Return value of `String` type.
+
+**Returns**
+
+instance
+
+**Example**
+
+```javascript
+bolt.get(function(error, value) {
+  // do something with value
+});
+
+```
+
+
 ### set
 
 **Type** instance
@@ -146,6 +168,26 @@ bolt.set("228,41,15,10", function(){
 });
 ```
 
+
+### getRGBA
+
+**Type** instance
+
+**Arguments**
+
+1. callback (*function*): function invoked when value is available. Return value of `Array` type.
+
+**Returns**
+
+instance
+
+**Example**
+
+```javascript
+bolt.getRGBA(function(error, rgbaValue) {
+  // do something with rgbaValue
+});
+```
 
 ### setRGBA
 
@@ -169,13 +211,13 @@ bolt.setRGBA([228,41,15,10], function(){
 ```
 
 
-### get
+### getHue
 
 **Type** instance
 
 **Arguments**
 
-1. callback (*function*): function invoked when value is available. Return value of `String` type.
+1. callback (*function*): function invoked when value is available. Return value of `Integer` type.
 
 **Returns**
 
@@ -184,19 +226,19 @@ instance
 **Example**
 
 ```javascript
-bolt.get(function(error, value) {
-  // do something with value
+bolt.getHue(function(error, hueValue) {
+  // do something with hueValue
 });
-
 ```
 
-### getRGBA
+### setHue
 
 **Type** instance
 
 **Arguments**
 
-1. callback (*function*): function invoked when value is available. Return value of `Array` type.
+1. value (*Integer*): value to set on bulb.
+2. callback (*function*)
 
 **Returns**
 
@@ -205,10 +247,95 @@ instance
 **Example**
 
 ```javascript
-bolt.get(function(error, rgbaValue) {
-  // do something with rgbaValue
+bolt.setHue(12, function(){
+  // do something
 });
 ```
+
+
+### getSaturation
+
+**Type** instance
+
+**Arguments**
+
+1. callback (*function*): function invoked when value is available. Return value of `Integer` type.
+
+**Returns**
+
+instance
+
+**Example**
+
+```javascript
+bolt.getSaturation(function(error, saturationValue) {
+  // do something with saturationValue
+});
+```
+
+### setSaturation
+
+**Type** instance
+
+**Arguments**
+
+1. value (*Integer*): value to set on bulb.
+2. callback (*function*)
+
+**Returns**
+
+instance
+
+**Example**
+
+```javascript
+bolt.setSaturation(12, function(){
+  // do something
+});
+```
+
+
+### getBrightness
+
+**Type** instance
+
+**Arguments**
+
+1. callback (*function*): function invoked when value is available. Return value of `Integer` type.
+
+**Returns**
+
+instance
+
+**Example**
+
+```javascript
+bolt.getBrightness(function(error, brightnessValue) {
+  // do something with brightnessValue
+});
+```
+
+### setBrightness
+
+**Type** instance
+
+**Arguments**
+
+1. value (*Integer*): value to set on bulb.
+2. callback (*function*)
+
+**Returns**
+
+instance
+
+**Example**
+
+```javascript
+bolt.setBrightness(12, function(){
+  // do something
+});
+```
+
 
 ### getState
 
