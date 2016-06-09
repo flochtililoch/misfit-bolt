@@ -2,7 +2,7 @@
 
 
 Thin wrapper around [sandeepmistry/noble](https://github.com/sandeepmistry/noble), that helps [Misfit Bolt](https://misfit.com/products/bolt) bulbs discovery, and allows turning them on/off and changing their color and brightness, as well as reading their currently set values.
-Currently support setting color and brightness via [RGBA](https://en.wikipedia.org/wiki/RGBA_color_space).
+Currently support setting color and brightness via [RGBA](https://en.wikipedia.org/wiki/RGBA_color_space) and [HSB](https://en.wikipedia.org/wiki/HSL_and_HSV).
 
 
 ## Prerequisites
