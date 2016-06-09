@@ -19,7 +19,7 @@
   },
   "scripts": {
     "lint": "./node_modules/.bin/jshint *.js **/*.js",
-    "test": "./node_modules/.bin/mocha .",
+    "test": "./node_modules/.bin/mocha *.js **/*.js",
     "patch-release": "npm version patch && npm publish && git push --follow-tags",
     "minor-release": "npm version minor && npm publish && git push --follow-tags",
     "major-release": "npm version major && npm publish && git push --follow-tags"
@@ -39,6 +39,7 @@
     "chai": "^3.4.1",
     "jshint": "^2.8.0",
     "mocha": "^2.3.4",
+    "proxyquire": "^1.7.9",
     "sinon": "^1.17.2"
   }
 }

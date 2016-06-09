@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-var debug = require('debug')(require('./package').name),
+const debug = require('debug')(require('./package').name),
       Peripheral = require('noble/lib/peripheral'),
       State = require('./lib/state'),
       noble = require('./lib/noble'),
@@ -77,18 +77,6 @@ class Bolt {
     return this;
   }
 
-  set(value, done) {
-    assert(typeof value === 'string' && value.length <= 18, 'Bolt#set : first argument should be a string of 18 chars max');
-    assert(typeof done === 'function', 'Bolt#set : second argument should be a function');
-    assert(this.connected, 'Bolt#set : bulb is not connected.');
-    this.state.value = value;
-    this.getLight((error, light) => {
-      debug(`set light: ${light} with value: ${this.state.buffer.toString()}`);
-      light.write(this.state.buffer, undefined, done);
-    });
-    return this;
-  }
-
   get(done) {
     assert(typeof done === 'function', 'Bolt#get : first argument should be a function');
     assert(this.connected, 'Bolt#get : bulb is not connected.');
@@ -103,10 +91,15 @@ class Bolt {
     return this;
   }
 
-  setRGBA(rgba, done) {
-    assert(this.connected, 'Bolt#setRGBA : bulb is not connected.');
-    this.state.rgba = rgba;
-    return this.set(this.state.value, done);
+  set(value, done) {
+    assert(typeof done === 'function', 'Bolt#set : second argument should be a function');
+    assert(this.connected, 'Bolt#set : bulb is not connected.');
+    this.state.value = value;
+    this.getLight((error, light) => {
+      debug(`set light: ${light} with value: ${this.state.buffer.toString()}`);
+      light.write(this.state.buffer, undefined, done);
+    });
+    return this;
   }
 
   getRGBA(done) {
@@ -118,9 +111,10 @@ class Bolt {
     return this;
   }
 
-  setHue(hue, done) {
-    assert(this.connected, 'Bolt#setHue : bulb is not connected.');
-    this.state.hue = hue;
+  setRGBA(rgba, done) {
+    assert(typeof done === 'function', 'Bolt#setRGBA : second argument should be a function');
+    assert(this.connected, 'Bolt#setRGBA : bulb is not connected.');
+    this.state.rgba = rgba;
     return this.set(this.state.value, done);
   }
 
@@ -133,9 +127,10 @@ class Bolt {
     return this;
   }
 
-  setSaturation(saturation, done) {
-    assert(this.connected, 'Bolt#setSaturation : bulb is not connected.');
-    this.state.saturation = saturation;
+  setHue(hue, done) {
+    assert(typeof done === 'function', 'Bolt#setHue : second argument should be a function');
+    assert(this.connected, 'Bolt#setHue : bulb is not connected.');
+    this.state.hue = hue;
     return this.set(this.state.value, done);
   }
 
@@ -148,9 +143,10 @@ class Bolt {
     return this;
   }
 
-  setBrightness(brightness, done) {
-    assert(this.connected, 'Bolt#setBrightness : bulb is not connected.');
-    this.state.brightness = brightness;
+  setSaturation(saturation, done) {
+    assert(typeof done === 'function', 'Bolt#setSaturation : second argument should be a function');
+    assert(this.connected, 'Bolt#setSaturation : bulb is not connected.');
+    this.state.saturation = saturation;
     return this.set(this.state.value, done);
   }
 
@@ -163,8 +159,11 @@ class Bolt {
     return this;
   }
 
-  setState(state, done) {
-    return this.set(state ? on : off, done);
+  setBrightness(brightness, done) {
+    assert(typeof done === 'function', 'Bolt#setBrightness : second argument should be a function');
+    assert(this.connected, 'Bolt#setBrightness : bulb is not connected.');
+    this.state.brightness = brightness;
+    return this.set(this.state.value, done);
   }
 
   getState(done) {
@@ -173,6 +172,10 @@ class Bolt {
     this.get((error, value) => {
       done(error, isOn(value));
     });
+  }
+
+  setState(state, done) {
+    return this.set(state ? on : off, done);
   }
 
   off(done) {
