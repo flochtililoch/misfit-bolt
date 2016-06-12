@@ -22,6 +22,12 @@ class Bolt {
     this.peripheral = peripheral;
     this.state = new State();
     this.connected = false;
+    this.peripheral.on('disconnect', () => {
+      debug(`disconnected: ${this.peripheral.uuid}`);
+      this.connected = false;
+      this.light = undefined;
+      Bolt.remove(this.id);
+    });
   }
 
   getLight(done) {
@@ -187,28 +193,60 @@ class Bolt {
   }
 
   static discover(done, uuids) {
-    assert(typeof done === 'function', 'Bolt.discover : first argument should be a function');
     noble.on('discover', (peripheral) => {
-      debug(`peripheral discovered`);
-      if (peripheral.advertisement.localName == advertisementName) {
+      if (peripheral.advertisement.localName === advertisementName) {
         if (uuids !== undefined) {
           assert(uuids instanceof Array, 'Bolt.discover : second optional argument should be an array');
           if (uuids.indexOf(peripheral.uuid) == -1) {
+            debug(`Bolt ${peripheral.uuid} not part of requested uuids`);
             return;
           }
         }
-        done(new Bolt(peripheral));
+        if (Bolt.get(peripheral.uuid)) {
+          return;
+        }
+        debug(`Bolt ${peripheral.uuid} created`);
+        const bolt = new Bolt(peripheral);
+        Bolt.bolts.push(bolt);
+        if (done) {
+          assert(typeof done === 'function', 'Bolt.discover : first argument should be a function');
+          done(bolt);
+        }
       }
     });
 
     noble.on('stateChange', (state) => {
+      debug(`State changed to ${state}`);
       if (state === 'poweredOn') {
-        noble.startScanning();
+        noble.startScanning([], true);
       } else {
         noble.stopScanning();
       }
     });
+
+    noble.on('warning', (warning) => {
+      debug(`Warning sent: ${warning}`)
+    });
   }
+
+  static get(id) {
+    return Bolt.bolts.filter((bolt, index) => {
+      return bolt.id === id;
+    })[0];
+  }
+
+  static remove(id) {
+    const bolt = Bolt.get(id);
+    const index = Bolt.bolts.indexOf(bolt),
+          found = index >= 0;
+    if (found) {
+      Bolt.bolts.splice(index, 1);
+    }
+    return found;
+  }
+
 }
+
+Bolt.bolts = [];
 
 module.exports = Bolt;

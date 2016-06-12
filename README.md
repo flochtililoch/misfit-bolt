@@ -26,7 +26,7 @@ npm install misfit-bolt
 
 **Arguments**
 
-1. callback (*function*): function to be invoked once a Bolt is discovered. Takes a `Bolt` instance as first argument.
+1. callback (*function*, optional): function to be invoked once a Bolt is discovered. Takes a `Bolt` instance as first argument.
 2. uuids (*Array*, optional): list of Bolt uuid to discover.
 
 **Returns**
@@ -38,6 +38,41 @@ npm install misfit-bolt
 Bolt.discover(function(bolt) {
   // do something
 }, ['29852E52-67A0-490A-BC55-7FAB809AD0C0']);
+```
+
+### get
+
+**Type** static
+
+**Arguments**
+
+1. id (*string*): UUID of a Bolt.
+
+**Returns**
+
+`<Bolt>` instance, if found.
+
+**Example**
+```javascript
+let bolt = Bolt.get('29852E52-67A0-490A-BC55-7FAB809AD0C0');
+// do something with bolt
+```
+
+### remove
+
+**Type** static
+
+**Arguments**
+
+1. id (*string*): UUID of a Bolt.
+
+**Returns**
+
+`Bool` successfully removed
+
+**Example**
+```javascript
+Bolt.remove('29852E52-67A0-490A-BC55-7FAB809AD0C0');
 ```
 
 
