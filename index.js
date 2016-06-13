@@ -11,7 +11,8 @@ const debug = require('debug')(require('./package').name),
 const advertisementName = 'MFBOLT',
       lightCharacteristicUUID = 'fff1',
       on = 'CLTMP 3200,100',
-      off = 'CLTMP 3200,0';
+      off = 'CLTMP 3200,0',
+      retryAfter = 500;
 
 
 class Bolt {
@@ -35,19 +36,27 @@ class Bolt {
     if (this.light) {
       debug('got cached light');
       return done(undefined, this.light);
-    }
-    this.peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
-      debug('got light');
-      var characteristic;
-      for (var i = 0; i < characteristics.length; i ++) {
-        characteristic = characteristics[i];
-        if(characteristic.uuid == lightCharacteristicUUID) {
-          this.light = characteristic;
+    } else if (this.gettingLight) {
+      debug('already getting light...');
+      setTimeout(() => {
+        this.getLight(done);
+      }, retryAfter);
+    } else {
+      this.gettingLight = true;
+      this.peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
+        this.gettingLight = false;
+        debug('got light');
+        var characteristic;
+        for (var i = 0; i < characteristics.length; i ++) {
+          characteristic = characteristics[i];
+          if(characteristic.uuid == lightCharacteristicUUID) {
+            this.light = characteristic;
+          }
         }
-      }
-      assert(characteristic, 'Bolt#connect : could not find light characteristic');
-      done(error, this.light);
-    });
+        assert(characteristic, 'Bolt#getLight : could not find light characteristic');
+        done(error, this.light);
+      });
+    }
   }
 
   connect(done) {
@@ -57,8 +66,15 @@ class Bolt {
     if (this.connected) {
       debug('already connected');
       this.getLight(done);
+    } else if (this.connecting) {
+      debug('already connecting...');
+      setTimeout(() => {
+        this.connect(done);
+      }, retryAfter);
     } else {
+      this.connecting = true;
       this.peripheral.connect((error) => {
+        this.connecting = false;
         this.connected = true;
         debug(`connected: ${this.peripheral.uuid}`);
         this.getLight(done);
