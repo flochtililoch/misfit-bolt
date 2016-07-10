@@ -1,15 +1,20 @@
 # Misfit Bolt Javascript Interface ![Build status](https://travis-ci.org/flochtililoch/misfit-bolt.svg)
 
+Implementation of [sandeepmistry/noble-device](https://github.com/sandeepmistry/noble-device), that helps driving a [Misfit Bolt](https://misfit.com/products/bolt) LED bluetooth bulbs.
+Largely inspired by [fayep's Python implementation](https://github.com/fayep/bolt), and [sandeepmistry's YeeLight Bluetooth implementation](sandeepmistry/node-yeelight-blue).
+Based on [Yeelight Blue Message Interface specifications](http://www.yeelight.com/download/yeelight_blue_message_interface_v1.0.pdf).
 
-Thin wrapper around [sandeepmistry/noble](https://github.com/sandeepmistry/noble), that helps [Misfit Bolt](https://misfit.com/products/bolt) bulbs discovery, and allows turning them on/off and changing their color and brightness, as well as reading their currently set values.
-Currently support setting color and brightness via [RGBA](https://en.wikipedia.org/wiki/RGBA_color_space) and [HSB](https://en.wikipedia.org/wiki/HSL_and_HSV).
+## Features
 
+-   Control of color via [RGBA](https://en.wikipedia.org/wiki/RGBA_color_space) and [HSB](https://en.wikipedia.org/wiki/HSL_and_HSV) schemes.
+-   Control of state, with in-bulb persistence of last color set, and in-app persistence of last brightness set.
+-   Control of gradual effect transition (progressive or immediate).
+-   Control of the bluetooth name of the bulb.
 
 ## Prerequisites
 
 To connect to the Misfit Bolt, you need BLE capabilities.
 [See sandeepmistry/noble prerequisites](https://github.com/sandeepmistry/noble#prerequisites) for more details.
-
 
 ## Setup
 
@@ -17,434 +22,387 @@ To connect to the Misfit Bolt, you need BLE capabilities.
 npm install misfit-bolt
 ```
 
+## Developer
 
-## API Methods
-
-### discover
-
-**Type** static
-
-**Arguments**
-
-1. callback (*function*, optional): function to be invoked once a Bolt is discovered. Takes a `Bolt` instance as first argument.
-2. uuids (*Array*, optional): list of Bolt uuid to discover.
-
-**Returns**
-
-`undefined`
-
-**Example**
-```javascript
-Bolt.discover(function(bolt) {
-  // do something
-}, ['29852E52-67A0-490A-BC55-7FAB809AD0C0']);
+```bash
+npm run lint
+npm run doc-lint
+npm run doc-gen
+npm test
 ```
 
-### get
+## API
 
-**Type** static
+### Bolt
 
-**Arguments**
+**Parameters**
 
-1. id (*string*): UUID of a Bolt.
+-   `peripheral`
 
-**Returns**
+#### setRGBA
 
-`<Bolt>` instance, if found.
+Set RGBA values of the bolt.
 
-**Example**
-```javascript
-let bolt = Bolt.get('29852E52-67A0-490A-BC55-7FAB809AD0C0');
-// do something with bolt
-```
+**Parameters**
 
-### remove
+-   `rgba` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Red (0 to 255) / Green (0 to 255) / Blue (0 to 255) / Alpha (0 to 100) values
+-   `done` **?SimpleCallback** completion callback
 
-**Type** static
-
-**Arguments**
-
-1. id (*string*): UUID of a Bolt.
-
-**Returns**
-
-`Bool` successfully removed
-
-**Example**
-```javascript
-Bolt.remove('29852E52-67A0-490A-BC55-7FAB809AD0C0');
-```
-
-
-### connect
-
-**Type** instance
-
-**Arguments**
-
-1. callback (*function*)
-
-**Returns**
-
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.connect(function() {
-  // do something
+bolt.setRGBA([255, 0, 0, 10], function(error) {
+  console.log('Bolt now set to red !');
 });
 ```
 
+Returns **[Bolt](#bolt)**
 
-### disconnect
+#### getHSB
 
-**Type** instance
+Retrieve Hue, Saturation and Brightness values of the bolt in the form of an Array of Integers.
 
-**Arguments**
+**Parameters**
 
-1. callback (*function*)
+-   `done` **NumbersGetterCallback** completion callback
 
-**Returns**
-
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.disconnect(function(){
-  // do something
+bolt.getHSB(function(error, hsb) {
+  console.log('Current HSB values are: ', hsb);
 });
 ```
 
+Returns **[Bolt](#bolt)**
 
-### on
+#### setHSB
 
-**Type** instance
+Set HSB values of the bolt.
 
-**Arguments**
+**Parameters**
 
-1. callback (*function*)
+-   `rgba` **[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)>** Hue (0 to 360) / Saturation (0 to 100) / Brightness (0 to 100) values
+-   `hsb`
+-   `done` **?SimpleCallback** completion callback
 
-**Returns**
-
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.on(function(){
-  // do something
+bolt.setHSB([0, 100, 10], function(error) {
+  console.log('Bolt now set to red !');
 });
 ```
 
+Returns **[Bolt](#bolt)**
 
-### off
+#### getHue
 
-**Type** instance
+Retrieve Hue value of the bolt.
 
-**Arguments**
+**Parameters**
 
-1. callback (*function*)
+-   `done` **NumberGetterCallback** completion callback
 
-**Returns**
-
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.off(function(){
-  // do something
+bolt.getHSB(function(error, hue) {
+  console.log('Current Hue value is: ', hue);
 });
 ```
 
+Returns **[Bolt](#bolt)**
 
-### get
+#### setHue
 
-**Type** instance
+Set Hue value of the bolt.
 
-**Arguments**
+**Parameters**
 
-1. callback (*function*): function invoked when value is available. Return value of `String` type.
+-   `hue` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Hue value (0 to 360)
+-   `done` **?SimpleCallback** completion callback
 
-**Returns**
-
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.get(function(error, value) {
-  // do something with value
-});
-
-```
-
-
-### set
-
-**Type** instance
-
-**Arguments**
-
-1. value (*String*): value to set on bulb. Mostly in the form or RGBA. Also accepts `CLTMP 3200,0` or `CLTMP 3200,1` (used to toggle on / off). Other undocumented formats might exist.
-2. callback (*function*)
-
-**Returns**
-
-instance
-
-**Example**
-
-```javascript
-bolt.set("228,41,15,10", function(){
-  // do something
+bolt.setHue(10, function(error) {
+  console.log('Hue is now set to 10');
 });
 ```
 
+Returns **[Bolt](#bolt)**
 
-### getRGBA
+#### getSaturation
 
-**Type** instance
+Retrieve Saturation value of the bolt.
 
-**Arguments**
+**Parameters**
 
-1. callback (*function*): function invoked when value is available. Return value of `Array` type.
+-   `done` **NumberGetterCallback** completion callback
 
-**Returns**
-
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.getRGBA(function(error, rgbaValue) {
-  // do something with rgbaValue
+bolt.getSaturation(function(error, saturation) {
+  console.log('Current Saturation value is: ', saturation);
 });
 ```
 
-### setRGBA
+Returns **[Bolt](#bolt)**
 
-**Type** instance
+#### setSaturation
 
-**Arguments**
+Set Saturation value of the bolt.
 
-1. value (*Array*): value to set on bulb. Should be in the form of `[red, green, blue, alpha]`.
-2. callback (*function*)
+**Parameters**
 
-**Returns**
+-   `saturation` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Saturation value (0 to 100)
+-   `done` **?SimpleCallback** completion callback
 
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.setRGBA([228,41,15,10], function(){
-  // do something
+bolt.setSaturation(10, function(error) {
+  console.log('Saturation is now set to 10');
 });
 ```
 
+Returns **[Bolt](#bolt)**
 
-### getHue
+#### getBrightness
 
-**Type** instance
+Retrieve Brightness value of the bolt.
 
-**Arguments**
+**Parameters**
 
-1. callback (*function*): function invoked when value is available. Return value of `Integer` type.
+-   `done` **NumberGetterCallback** completion callback
 
-**Returns**
-
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.getHue(function(error, hueValue) {
-  // do something with hueValue
+bolt.getBrightness(function(error, brightness) {
+  console.log('Current Brightness value is: ', brightness);
 });
 ```
 
-### setHue
+Returns **[Bolt](#bolt)**
 
-**Type** instance
+#### setBrightness
 
-**Arguments**
+Set Brightness value of the bolt.
 
-1. value (*Integer*): value to set on bulb.
-2. callback (*function*)
+**Parameters**
 
-**Returns**
+-   `brightness` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Brightness value (0 to 100)
+-   `done` **?SimpleCallback** completion callback
 
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.setHue(12, function(){
-  // do something
+bolt.setBrightness(10, function(error) {
+  console.log('Brightness is now set to 10');
 });
 ```
 
+Returns **[Bolt](#bolt)**
 
-### getSaturation
+#### getState
 
-**Type** instance
+Retrieve State value of the bolt.
 
-**Arguments**
+**Parameters**
 
-1. callback (*function*): function invoked when value is available. Return value of `Integer` type.
+-   `done` **BooleanGetterCallback** completion callback
 
-**Returns**
-
-instance
-
-**Example**
-
-```javascript
-bolt.getSaturation(function(error, saturationValue) {
-  // do something with saturationValue
-});
-```
-
-### setSaturation
-
-**Type** instance
-
-**Arguments**
-
-1. value (*Integer*): value to set on bulb.
-2. callback (*function*)
-
-**Returns**
-
-instance
-
-**Example**
-
-```javascript
-bolt.setSaturation(12, function(){
-  // do something
-});
-```
-
-
-### getBrightness
-
-**Type** instance
-
-**Arguments**
-
-1. callback (*function*): function invoked when value is available. Return value of `Integer` type.
-
-**Returns**
-
-instance
-
-**Example**
-
-```javascript
-bolt.getBrightness(function(error, brightnessValue) {
-  // do something with brightnessValue
-});
-```
-
-### setBrightness
-
-**Type** instance
-
-**Arguments**
-
-1. value (*Integer*): value to set on bulb.
-2. callback (*function*)
-
-**Returns**
-
-instance
-
-**Example**
-
-```javascript
-bolt.setBrightness(12, function(){
-  // do something
-});
-```
-
-
-### getState
-
-**Type** instance
-
-**Arguments**
-
-1. callback (*function*): function invoked when state is available. Return value of `Bool` type.
-
-**Returns**
-
-instance
-
-**Example**
+**Examples**
 
 ```javascript
 bolt.getState(function(error, state) {
-  // do something with state
+  console.log(`Bolt is ${state ? 'on' : 'off'}`);
 });
 ```
 
-### setState
+Returns **[Bolt](#bolt)**
 
-**Type** instance
+#### setState
 
-**Arguments**
+Set State value of the bolt.
 
-1. callback (*function*): function invoked when state is set.
+**Parameters**
 
-**Returns**
+-   `state` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** State value
+-   `done` **?SimpleCallback** completion callback
 
-instance
-
-**Example**
+**Examples**
 
 ```javascript
-bolt.setState(true, function(error, state) {
-  // do something with state
+bolt.setState(true, function(error) {
+  console.log(`Bolt is now on !`);
 });
 ```
 
-## Example
+Returns **[Bolt](#bolt)**
+
+#### getGradualMode
+
+Retrieve Gradual Mode value of the bolt. Indicates whether transition between states is progressive or immediate.
+
+**Parameters**
+
+-   `done` **BooleanGetterCallback** completion callback
+
+Returns **[Bolt](#bolt)**
+
+#### setGradualMode
+
+Set Gradual Mode value of the bolt.
+
+**Parameters**
+
+-   `gradualMode` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Gradual Mode value
+-   `done` **?SimpleCallback** completion callback
+
+Returns **[Bolt](#bolt)**
+
+#### getName
+
+Retrieve Name value of the bolt (as visible by the Bluetooth client).
+
+**Parameters**
+
+-   `done` **StringGetterCallback** completion callback
+
+Returns **[Bolt](#bolt)**
+
+#### setName
+
+Set Name value of the bolt.
+
+**Parameters**
+
+-   `name` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Name value
+-   `done` **?SimpleCallback** completion callback
+
+Returns **[Bolt](#bolt)**
+
+#### getRGBA
+
+Retrieve Red, Green, Blue and Alpha values of the bolt in the form of an Array of Integers.
+
+**Parameters**
+
+-   `done` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** completion callback
+-   `done` **NumbersGetterCallback** completion callback
+
+**Examples**
 
 ```javascript
-Bolt = require('.');
-
-// Discover every nearby Bolt
-Bolt.discover(function(bolt) {
-
-  // Each time a bolt is discovered, connect to it
-  bolt.connect(function() {
-    var i = 0,
-        colors = [[228,41,15,10],
-                  [216,62,36,10],
-                  [205,55,56,10],
-                  [211,27,76,10],
-                  [166,18,97,10]];
-
-    // Change color every 500 ms
-    setInterval(function(){
-      var color = colors[i++ % colors.length];
-      bolt.setRGBA(color, function(){
-        // set complete
-      });
-    }, 500);
-  });
+bolt.getRGBA(function(error, rgba) {
+  console.log('Current RGBA values are: ', rgba);
 });
-
 ```
 
+Returns **[Bolt](#bolt)**
+
+#### init
+
+Starts the discovery loop.
+Loop consist in stopping and starting the Bolt discovery process every DISCOVERY_LOOP_MS.
+This is to paliate a potential issue with Noble device that becomes stale after a few hours
+and loose connection with connected bolt / stop detecting previously disconnected bolts.
+
+**Examples**
+
+```javascript
+Bolt.init(function(error, rgba) {
+  console.log('Current RGBA values are: ', rgba);
+});
+```
+
+#### get
+
+Retrieve an bolt from internal registry.
+
+**Parameters**
+
+-   `id` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** bolt identifier
+
+**Examples**
+
+```javascript
+let bolt = Bolt.get('2312AC5C08E348699B0199458AC644BD');
+bolt.setState(true, function() {
+  ...
+});
+```
+
+Returns **[Bolt](#bolt)?**
+
+#### remove
+
+Remove an bolt from internal registry.
+
+**Parameters**
+
+-   `id` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** bolt identifier
+
+**Examples**
+
+```javascript
+let bolt = Bolt.remove('2312AC5C08E348699B0199458AC644BD');
+```
+
+Returns **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**
+
+#### SimpleCallback
+
+Simple completion callback
+
+**Parameters**
+
+-   `Error` **?[Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)** while performing async operation
+
+#### NumbersGetterCallback
+
+Numbers getter completion callback
+
+**Parameters**
+
+-   `Error` **?[Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)** while performing async operation
+-   `Value` **?[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)>** retrieved
+
+#### NumberGetterCallback
+
+Number getter completion callback
+
+**Parameters**
+
+-   `Error` **?[Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)** while performing async operation
+-   `Value` **?[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** retrieved
+
+#### BooleanGetterCallback
+
+Boolean getter completion callback
+
+**Parameters**
+
+-   `Error` **?[Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)** while performing async operation
+-   `Value` **?[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** retrieved
+
+#### StringGetterCallback
+
+String getter completion callback
+
+**Parameters**
+
+-   `Error` **?[Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)** while performing async operation
+-   `Value` **?[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** retrieved
 
 ## TODO
-- CLI tool
+
+-   CLI tool
 
 ## Notes
-- Inspired by [fayep's Python implementation](https://github.com/fayep/bolt)
-- PRs welcomed!
+
+-   PRs welcomed!
