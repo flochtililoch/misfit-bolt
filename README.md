@@ -2,7 +2,7 @@
 
 Implementation of [sandeepmistry/noble-device](https://github.com/sandeepmistry/noble-device), that helps driving a [Misfit Bolt](https://misfit.com/products/bolt) LED bluetooth bulbs.
 
-Largely inspired by [fayep's Python implementation](https://github.com/fayep/bolt), and [sandeepmistry's YeeLight Bluetooth implementation](sandeepmistry/node-yeelight-blue).
+Largely inspired by [fayep's Python implementation](https://github.com/fayep/bolt), and [sandeepmistry's YeeLight Bluetooth implementation](https://github.com/sandeepmistry/node-yeelight-blue).
 
 Based on [Yeelight Blue Message Interface specifications](http://www.yeelight.com/download/yeelight_blue_message_interface_v1.0.pdf).
 

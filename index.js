@@ -382,17 +382,6 @@ Bolt.prototype.setName = function (name, done) {
 
 
 /**
- * Clean up disconnected bolts from internal registry
- * Automatically called on disconnect event
- * @private
- */
-Bolt.prototype.onDisconnect = function () {
-  debug(`disconnected: ${this.id}`);
-  Bolt.remove(this.id);
-};
-
-
-/**
  * Set internal state property with value
  * @param {string} property - property to set
  * @param {integer|boolean|string} value - value to set
@@ -622,7 +611,15 @@ Bolt.is = function(peripheral) {
  * @private
  */
 Bolt._setup = function (bolt) {
-  debug(`discovered: ${bolt.id}`);
+  debug(`discovered: ${bolt.id}`, bolt);
+
+  // Instance is kept around when Bolt is re-discovered.
+  // Ensure that we attach events only once.
+  bolt.once('disconnect', () => {
+    debug(`disconnected: ${bolt.id}`);
+    Bolt.remove(bolt.id);
+  });
+
   bolt.connectAndSetup(() => {
     bolt.getRGBA((error) => {
       if (error) {
@@ -682,3 +679,5 @@ Bolt._setup = function (bolt) {
 
 
 module.exports = Bolt;
+
+debug(`Running from ${__dirname}`);
